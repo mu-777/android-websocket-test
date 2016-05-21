@@ -13,11 +13,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
+//http://dangoya.jp/?p=169
 
 public class MainActivity extends Activity implements SensorEventListener {
 
@@ -103,7 +107,15 @@ public class MainActivity extends Activity implements SensorEventListener {
             pitch = attitude[1] * RAD2DEG;
             roll = attitude[2] * RAD2DEG;
             if (client != null) {
-                client.send(Integer.toString((int) azimuth));
+                try {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("azimuth", (int) azimuth);
+                    jsonObject.put("pitch", (int) pitch);
+                    jsonObject.put("roll", (int) roll);
+                    client.send(jsonObject.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
