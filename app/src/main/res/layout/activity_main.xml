@@ -9,19 +9,6 @@
     android:orientation="vertical"
     android:weightSum="1">
 
-    <FrameLayout
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_margin="10dp"
-        android:layout_weight="1"
-        android:background="#000" >
-
-        <com.mu_777.audiolization_project.websocket
-            android:id="@+id/mainView"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent" >
-        </com.mu_777.audiolization_project.websocket>
-    </FrameLayout>
 
     <LinearLayout
         android:orientation="horizontal"
@@ -40,6 +27,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/editText_serverip"
             android:layout_weight="1" />
+
     </LinearLayout>
 
     <LinearLayout
