@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
         @Override
         public void onError(Exception error) {
 //            statusTextView.setText("Error!");
-            Log.e(TAG, "Error!", error);
+            Log.d(TAG, "Error!", error);
         }
     };
 
@@ -69,7 +69,7 @@ public class MainActivity extends Activity {
                 EditText ipEditText = (EditText) findViewById(R.id.editText_serverip);
                 EditText portEditText = (EditText) findViewById(R.id.editText_serverport);
                 String address = "ws://" + ipEditText.getText().toString() + ":" + portEditText.getText().toString();
-                Log.e(TAG, String.format("Address: %s", address));
+                Log.d(TAG, String.format("Address: %s", address));
                 if (client != null) {
                     client.disconnect();
                     client = null;
