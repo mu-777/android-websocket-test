@@ -29,9 +29,9 @@ public class MainActivity extends Activity implements SensorEventListener {
     float[] gravity = new float[3];
     float[] geomagnetic = new float[3];
     float[] attitude = new float[3];
-    double azimuth;
-    double pitch;
-    double roll;
+    double azimuth = 0.0;
+    double pitch = 0.0;
+    double roll = 0.0;
 
     TextView statusTextView;
     List<BasicNameValuePair> extraHeaders = Arrays.asList(
@@ -68,8 +68,6 @@ public class MainActivity extends Activity implements SensorEventListener {
         }
     };
 
-    //    WebSocketClient client = new WebSocketClient(URI.create("ws://0.0.0.0:3000"),
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,7 +76,6 @@ public class MainActivity extends Activity implements SensorEventListener {
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
     }
 
-    @Override
     public void onResume() {
         super.onResume();
         mSensorManager.registerListener(this,
@@ -105,7 +102,9 @@ public class MainActivity extends Activity implements SensorEventListener {
             azimuth = attitude[0] * RAD2DEG;
             pitch = attitude[1] * RAD2DEG;
             roll = attitude[2] * RAD2DEG;
-            client.send(Integer.toString((int) azimuth));
+            if (client != null) {
+                client.send(Integer.toString((int) azimuth));
+            }
         }
     }
 
@@ -124,6 +123,10 @@ public class MainActivity extends Activity implements SensorEventListener {
         }
         client = new WebSocketClient(URI.create(address), wsListener, extraHeaders);
         client.connect();
+        try {
+            Thread.sleep(1000); //3000ƒ~ƒŠ•bSleep‚·‚é
+        } catch (InterruptedException e) {
+        }
     }
 
     public void sendBtnClicked(View view) {

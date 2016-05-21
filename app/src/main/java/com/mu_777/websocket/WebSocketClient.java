@@ -26,6 +26,7 @@ import android.os.HandlerThread;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+
 import org.apache.http.*;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.message.BasicLineParser;
@@ -36,6 +37,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -50,14 +52,14 @@ import java.util.List;
 public class WebSocketClient {
     private static final String TAG = "WebSocketClient";
 
-    private URI                      mURI;
-    private Listener                 mListener;
-    private Socket                   mSocket;
-    private Thread                   mThread;
-    private HandlerThread            mHandlerThread;
-    private Handler                  mHandler;
+    private URI mURI;
+    private Listener mListener;
+    private Socket mSocket;
+    private Thread mThread;
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
     private List<BasicNameValuePair> mExtraHeaders;
-    private HybiParser               mParser;
+    private HybiParser mParser;
 
     private final Object mSendLock = new Object();
 
@@ -68,10 +70,10 @@ public class WebSocketClient {
     }
 
     public WebSocketClient(URI uri, Listener listener, List<BasicNameValuePair> extraHeaders) {
-        mURI          = uri;
+        mURI = uri;
         mListener = listener;
         mExtraHeaders = extraHeaders;
-        mParser       = new HybiParser(this);
+        mParser = new HybiParser(this);
 
         mHandlerThread = new HandlerThread("websocket-thread");
         mHandlerThread.start();
@@ -176,6 +178,11 @@ public class WebSocketClient {
         mThread.start();
     }
 
+//    public boolean isConnected() {
+//        return mThread.isAlive();
+//    }
+
+
     public void disconnect() {
         if (mSocket != null) {
             mHandler.post(new Runnable() {
@@ -272,9 +279,13 @@ public class WebSocketClient {
 
     public interface Listener {
         public void onConnect();
+
         public void onMessage(String message);
+
         public void onMessage(byte[] data);
+
         public void onDisconnect(int code, String reason);
+
         public void onError(Exception error);
     }
 
