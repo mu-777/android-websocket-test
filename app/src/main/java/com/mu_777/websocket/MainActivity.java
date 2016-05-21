@@ -1,104 +1,52 @@
 package com.mu_777.websocket;
 
 import android.app.Activity;
-import android.os.Build;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
-import android.os.Handler;
-
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.channels.NotYetConnectedException;
 
 
 public class MainActivity extends Activity {
 
 
     private static final String TAG = "MainActivity";
-
-    private Handler mHandler;
-
-    private WebSocketClient mClient;
+    MainView mainView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mainView = (MainView) findViewById(R.id.mainView);
 
-        mHandler = new Handler();
-
-        if ("sdk".equals(Build.PRODUCT)) {
-            // エミュレータの場合はIPv6を無効    ----1
-            java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
-            java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
-        }
-
-        try {
-
-            URI uri = new URI("ws://10.4.143.75:3000");
-
-            mClient = new WebSocketClient(uri) {
-                @Override
-                public void onOpen(ServerHandshake handshake) {
-                    Log.d(TAG, "onOpen");
-                }
-
-                @Override
-                public void onMessage(final String message) {
-                    Log.d(TAG, "onMessage");
-                    Log.d(TAG, "Message:" + message);
-                    mHandler.post(new Runnable() {    // ----2
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-
-                @Override
-                public void onError(Exception ex) {
-                    Log.d(TAG, "onError");
-                    ex.printStackTrace();
-                }
-
-                @Override
-                public void onClose(int code, String reason, boolean remote) {
-                    Log.d(TAG, "onClose");
-                }
-            };
-
-            mClient.connect();
-            Log.d(TAG, "connect");
-
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        // 送信ボタン
-        Button button = (Button) findViewById(R.id.btn);
-        button.setOnClickListener(new View.OnClickListener() {
+        Button connectButton = (Button) findViewById(R.id.btn_connect);
+        connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText edit = (EditText) findViewById(R.id.edit);
-                try {
-                    // 送信
-                    mClient.send(edit.getText().toString());
-                } catch (NotYetConnectedException e) {
-                    e.printStackTrace();
-                }
+                EditText ipEditText = (EditText) findViewById(R.id.editText_serverip);
+                EditText portEditText = (EditText) findViewById(R.id.editText_serverport);
+                String address = "ws://" + ipEditText.getText().toString() + ":" + portEditText.getText().toString();
+                Log.d(TAG, String.format("Address: %s", address));
+                mainView.wsConnect(address);
             }
         });
 
+        Button sendButton = (Button) findViewById(R.id.btn_send);
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText msgEditText = (EditText) findViewById(R.id.editText_msg);
+                String msg = msgEditText.getText().toString();
+                mainView.wsSendMsg(msg);
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        mainView.wsDisconnect();
+        super.onDestroy();
     }
 }
 
