@@ -1,6 +1,10 @@
 package com.mu_777.websocket;
 
 import android.app.Activity;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,10 +19,20 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements SensorEventListener {
 
 
     private static final String TAG = "MainActivity";
+    private static final double RAD2DEG = 180 / Math.PI;
+    private SensorManager mSensorManager;
+    float[] rotationMatrix = new float[9];
+    float[] gravity = new float[3];
+    float[] geomagnetic = new float[3];
+    float[] attitude = new float[3];
+    double azimuth;
+    double pitch;
+    double roll;
+
     TextView statusTextView;
     List<BasicNameValuePair> extraHeaders = Arrays.asList(
             new BasicNameValuePair("Cookie", "session=abcd")
@@ -61,34 +75,65 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         statusTextView = (TextView) findViewById(R.id.textView_status);
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+    }
 
-        Button connectButton = (Button) findViewById(R.id.btn_connect);
-        connectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditText ipEditText = (EditText) findViewById(R.id.editText_serverip);
-                EditText portEditText = (EditText) findViewById(R.id.editText_serverport);
-                String address = "ws://" + ipEditText.getText().toString() + ":" + portEditText.getText().toString();
-                Log.d(TAG, String.format("Address: %s", address));
-                if (client != null) {
-                    client.disconnect();
-                    client = null;
-                }
-                client = new WebSocketClient(URI.create(address), wsListener, extraHeaders);
-                client.connect();
-            }
-        });
+    @Override
+    public void onResume() {
+        super.onResume();
+        mSensorManager.registerListener(this,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(this,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+                SensorManager.SENSOR_DELAY_FASTEST);
+    }
 
-        // ëóêMÉ{É^Éì
-        Button sendButton = (Button) findViewById(R.id.btn_send);
-        sendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditText msgEditText = (EditText) findViewById(R.id.editText_msg);
-                client.send(msgEditText.getText().toString());
-            }
-        });
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        switch (event.sensor.getType()) {
+            case Sensor.TYPE_MAGNETIC_FIELD:
+                geomagnetic = event.values.clone();
+                break;
+            case Sensor.TYPE_ACCELEROMETER:
+                gravity = event.values.clone();
+                break;
+        }
+        if (geomagnetic != null && gravity != null) {
+            SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
+            SensorManager.getOrientation(rotationMatrix, attitude);
+            azimuth = attitude[0] * RAD2DEG;
+            pitch = attitude[1] * RAD2DEG;
+            roll = attitude[2] * RAD2DEG;
+            client.send(Integer.toString((int) azimuth));
+        }
+    }
 
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    public void connectBtnClicked(View view) {
+        EditText ipEditText = (EditText) findViewById(R.id.editText_serverip);
+        EditText portEditText = (EditText) findViewById(R.id.editText_serverport);
+        String address = "ws://" + ipEditText.getText().toString() + ":" + portEditText.getText().toString();
+        Log.d(TAG, String.format("Address: %s", address));
+        if (client != null) {
+            client.disconnect();
+            client = null;
+        }
+        client = new WebSocketClient(URI.create(address), wsListener, extraHeaders);
+        client.connect();
+    }
+
+    public void sendBtnClicked(View view) {
+        EditText msgEditText = (EditText) findViewById(R.id.editText_msg);
+        client.send(msgEditText.getText().toString());
+    }
+
+    public void onPause() {
+        super.onPause();
+        mSensorManager.unregisterListener(this);
     }
 
     @Override
@@ -96,5 +141,6 @@ public class MainActivity extends Activity {
         client.disconnect();
         super.onDestroy();
     }
+
 }
 

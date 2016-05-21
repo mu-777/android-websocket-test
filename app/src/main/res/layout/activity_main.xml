@@ -54,6 +54,7 @@
         android:layout_width="352dp"
         android:layout_height="wrap_content"
         android:text="Connect"
+        android:onClick="connectBtnClicked"
         android:id="@+id/btn_connect" />
 
     <Space
@@ -85,5 +86,6 @@
         android:id="@+id/btn_send"
         android:layout_width="356dp"
         android:layout_height="wrap_content"
+        android:onClick="sendBtnClicked"
         android:text="Send" />
 </LinearLayout>
